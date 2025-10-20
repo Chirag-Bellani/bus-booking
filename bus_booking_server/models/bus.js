@@ -26,5 +26,5 @@ const BusSchema=new Schema({
     seats:[[SeatSchema]]
 })
 
-const Bus=mongoose.model("Busr",BusSchema)
+const Bus=mongoose.model("Bus",BusSchema)
 export default Bus;

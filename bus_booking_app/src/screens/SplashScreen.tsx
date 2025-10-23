@@ -1,11 +1,46 @@
-import { View, Text,SafeAreaView } from 'react-native'
-import React from 'react'
-
+import { View,Image, Alert } from 'react-native'
+import React, { useEffect } from 'react'
+import { getAccessToken, getRefreshToken } from '../service/storage';
+import { resetAndNavigate } from '../utils/NavigationUtils';
+import {jwtDecode} from 'jwt-decode';
+import { refresh_tokens } from '../service/request/auth';
+interface DecodedToken{
+  exp:number;
+}
 const SplashScreen = () => {
+const tokenCheck =  async() => {
+const accessToken=getAccessToken();
+const refreshToken=getRefreshToken() as string;
+if(accessToken)
+{
+  const decodedAccessToken=jwtDecode<DecodedToken>(accessToken)
+  const decodedRefreshToken=jwtDecode<DecodedToken>(refreshToken)
+  const currentTime=Date.now()/1000;
+  if(decodedRefreshToken?.exp<currentTime){
+    const refreshed=await refresh_tokens();
+    if(!refreshed){
+      Alert.alert('There was an error');
+      return; 
+    }
+  }
+  resetAndNavigate('HomeScreen');
+  return;
+}
+resetAndNavigate('LoginScreen');
+}
+
+  useEffect(()=>{
+const timeout=setTimeout(() => {
+  tokenCheck();
+}, 1500);
+
+return () => clearTimeout(timeout);
+  },[])
+
   return (
-    <SafeAreaView className='flex-1 items-center justify-center bg-gray-600'>
-      <Text>SplashScreen</Text>
-    </SafeAreaView>
+    <View className='flex-1 justify-center bg-white items-center'>
+      <Image source={require('../assets/images/logo_t.png')} className='h-[30%] w-[60%]' resizeMode='contain'/>
+    </View>
   )
 }
 
